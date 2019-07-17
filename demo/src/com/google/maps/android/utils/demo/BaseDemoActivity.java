@@ -21,9 +21,11 @@ import android.support.v4.app.FragmentActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 
 public abstract class BaseDemoActivity extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
+    private UiSettings mUiSettings;
 
     protected int getLayoutId() {
         return R.layout.map;
@@ -48,6 +50,10 @@ public abstract class BaseDemoActivity extends FragmentActivity implements OnMap
             return;
         }
         mMap = map;
+        mUiSettings = mMap.getUiSettings();
+
+        // Keep the UI Settings state in sync with the checkboxes.
+        mUiSettings.setZoomControlsEnabled(true);
         startDemo();
     }
 

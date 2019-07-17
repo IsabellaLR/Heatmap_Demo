@@ -17,6 +17,7 @@
 package com.google.maps.android.utils.demo;
 
 import android.graphics.Color;
+import android.graphics.Color;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -32,6 +33,7 @@ import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.Gradient;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
+import com.google.maps.android.heatmaps.WeightedLatLng;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -163,13 +165,13 @@ public class HeatmapsDemoActivity extends BaseDemoActivity {
 
             // Check if need to instantiate (avoid setData etc twice)
             if (mProvider == null) {
-                mProvider = new HeatmapTileProvider.Builder().data(
+                mProvider = new HeatmapTileProvider.Builder().weightedData(
                         mLists.get(getString(R.string.police_stations)).getData()).build();
                 mOverlay = getMap().addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
                 // Render links
                 attribution.setMovementMethod(LinkMovementMethod.getInstance());
             } else {
-                mProvider.setData(mLists.get(dataset).getData());
+                mProvider.setWeightedData(mLists.get(dataset).getData());
                 mOverlay.clearTileCache();
             }
             // Update attribution
@@ -184,8 +186,8 @@ public class HeatmapsDemoActivity extends BaseDemoActivity {
     }
 
     // Datasets from http://data.gov.au
-    private ArrayList<LatLng> readItems(int resource) throws JSONException {
-        ArrayList<LatLng> list = new ArrayList<LatLng>();
+    private ArrayList<WeightedLatLng> readItems(int resource) throws JSONException {
+        ArrayList<WeightedLatLng> list = new ArrayList<WeightedLatLng>();
         InputStream inputStream = getResources().openRawResource(resource);
         String json = new Scanner(inputStream).useDelimiter("\\A").next();
         JSONArray array = new JSONArray(json);
@@ -193,7 +195,8 @@ public class HeatmapsDemoActivity extends BaseDemoActivity {
             JSONObject object = array.getJSONObject(i);
             double lat = object.getDouble("lat");
             double lng = object.getDouble("lng");
-            list.add(new LatLng(lat, lng));
+            double val = object.getInt("val");
+            list.add(new WeightedLatLng(new LatLng(lat, lng), val));
         }
         return list;
     }
@@ -202,15 +205,15 @@ public class HeatmapsDemoActivity extends BaseDemoActivity {
      * Helper class - stores data sets and sources.
      */
     private class DataSet {
-        private ArrayList<LatLng> mDataset;
+        private ArrayList<WeightedLatLng> mDataset;
         private String mUrl;
 
-        public DataSet(ArrayList<LatLng> dataSet, String url) {
+        public DataSet(ArrayList<WeightedLatLng> dataSet, String url) {
             this.mDataset = dataSet;
             this.mUrl = url;
         }
 
-        public ArrayList<LatLng> getData() {
+        public ArrayList<WeightedLatLng> getData() {
             return mDataset;
         }
 
